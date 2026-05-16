@@ -1,4 +1,5 @@
 import asyncio
+<<<<<<< HEAD
 import logging
 from functools import wraps
 
@@ -39,3 +40,24 @@ def async_retry(max_attempts=3, base_delay=1):
         return wrapper
 
     return decorator
+=======
+from functools import wraps
+
+
+def async_retry(max_attempts: int = 3, delay: float = 1.0):
+    """Async retry decorator with exponential backoff."""
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            attempt = 1
+            while True:
+                try:
+                    return await func(*args, **kwargs)
+                except Exception as exc:
+                    if attempt >= max_attempts:
+                        raise
+                    await asyncio.sleep(delay * attempt)
+                    attempt += 1
+        return wrapper
+    return decorator
+>>>>>>> d84c771e (merge: resolve main.py conflicts with cache integration)

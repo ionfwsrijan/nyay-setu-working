@@ -481,19 +481,6 @@ async def deep_research_pipeline(query: str, language: str):
 
                 if not cached:
                     set_cached_response(cache_key, ai_answer)
-                )
-                ai_answer = response.text.strip()
-            except Exception as e:
-                logger.error(f"Gemini failed, falling back to Groq: {e}")
-                model_choice = "groq"
-                ai_answer = None
-        
-        if model_choice == "groq" or (model_choice == "gemini" and not gemini_client):
-           response = await call_groq_with_retry(
-               grounded_prompt,
-               query
-            )
-           ai_answer = response.choices[0].message.content.strip()
 
         # Stream reasoning text in chunks for live display
         if ai_answer:

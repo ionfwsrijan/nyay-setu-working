@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import logging
 import time
 
@@ -49,3 +50,10 @@ async def ocr_modi_document(file: UploadFile = File(...)):
     except Exception as exc:
         logger.error("Unexpected Modi OCR endpoint error: %s", exc)
         raise HTTPException(status_code=500, detail="OCR inference failed.") from exc
+=======
+"""Placeholder router for optional Modi OCR routes."""
+
+from fastapi import APIRouter
+
+router = APIRouter()
+>>>>>>> d84c771e (merge: resolve main.py conflicts with cache integration)
