@@ -1,6 +1,7 @@
 package com.nyaysetu.backend.dto;
 
 import com.nyaysetu.backend.entity.CaseStatus;
+import com.nyaysetu.backend.entity.CaseStage;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -19,7 +20,7 @@ public class CaseDTO {
     private LocalDateTime filedDate;
     private LocalDateTime nextHearing;
     private String assignedJudge;
-    private Long clientId; // Changed from UUID to Long
+    private Long clientId;
     private String clientName;
     private int documentsCount;
     private String lawyerProposalStatus;
@@ -45,7 +46,11 @@ public class CaseDTO {
     
     // Judge's precise 1-7 judicial stage (used by CaseStepper for accurate positioning)
     private Integer currentJudicialStage;
+
+    // Formal procedural stage (drives the Judge's CaseLifecycleStepper)
+    private CaseStage stage;
     
     // Whether a lawyer has been formally assigned to this case
     private Boolean assignedLawyer;
 }
+

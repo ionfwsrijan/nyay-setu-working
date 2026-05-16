@@ -91,13 +91,19 @@ const STATUS_TO_STAGE = {
 /**
  * Resolve the active stage index.
  * If the backend provides a `judicialStage` number (1-7 from the Judge workflow),
- * we map it: 4 (Evidence) → stage 4, 5 (Arguments) → stage 3, etc.
- * Otherwise we use the status string.
+ * we map it to a 0-based stepper index:
+ *   judicialStage 1 = Cognizance      → stepper 2 (Notice Issued)
+ *   judicialStage 2 = Summons          → stepper 2 (Notice Issued)
+ *   judicialStage 3 = Hearings         → stepper 3 (Hearings)
+ *   judicialStage 4 = Evidence         → stepper 4 (Evidence)
+ *   judicialStage 5 = Arguments        → stepper 4 (Evidence — still in trial phase)
+ *   judicialStage 6 = Judgment Pending → stepper 5 (Judgment)
+ *   judicialStage 7 = Verdict          → stepper 6 (Appeal/Closed)
  */
 function resolveStage(status, judicialStage) {
     // If judge has explicitly set the judicial stage, prefer it
     if (judicialStage != null && judicialStage >= 1) {
-        const jsMap = { 1: 2, 2: 2, 3: 3, 4: 4, 5: 3, 6: 5, 7: 6 };
+        const jsMap = { 1: 2, 2: 2, 3: 3, 4: 4, 5: 4, 6: 5, 7: 6 };
         return jsMap[judicialStage] ?? STATUS_TO_STAGE[status] ?? 0;
     }
     return STATUS_TO_STAGE[status] ?? 0;
