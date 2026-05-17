@@ -163,7 +163,7 @@ export default function CaseStepper({ currentStatus, judicialStage, compact = fa
                                     height: '8px',
                                     borderRadius: '50%',
                                     background: 'var(--color-primary)',
-                                    boxShadow: '0 0 6px rgba(139, 92, 246, 0.6)',
+                                    boxShadow: '0 0 6px color-mix(in srgb, var(--color-primary) 60%, transparent)',
                                     animation: 'stepperPulse 2s ease-in-out infinite'
                                 }} />
                             )}
@@ -297,9 +297,9 @@ export default function CaseStepper({ currentStatus, judicialStage, compact = fa
                                         ? '3px solid var(--color-primary)'
                                         : '2px solid rgba(30, 42, 68, 0.15)',
                                 boxShadow: isActive
-                                    ? '0 0 0 6px rgba(139, 92, 246, 0.15), 0 4px 12px rgba(139, 92, 246, 0.25)'
+                                    ? '0 0 0 6px color-mix(in srgb, var(--color-primary) 15%, transparent), 0 4px 12px color-mix(in srgb, var(--color-primary) 25%, transparent)'
                                     : isCompleted
-                                        ? '0 2px 8px rgba(139, 92, 246, 0.2)'
+                                        ? '0 2px 8px color-mix(in srgb, var(--color-primary) 20%, transparent)'
                                         : 'none',
                                 transition: 'all 0.3s ease',
                                 transform: isHovered ? 'scale(1.12)' : 'scale(1)'
@@ -386,8 +386,8 @@ export default function CaseStepper({ currentStatus, judicialStage, compact = fa
             <div style={{
                 marginTop: '1.5rem',
                 padding: '0.85rem 1.25rem',
-                background: 'rgba(139, 92, 246, 0.06)',
-                border: '1px solid rgba(139, 92, 246, 0.15)',
+                background: 'color-mix(in srgb, var(--color-primary) 6%, transparent)',
+                border: '1px solid color-mix(in srgb, var(--color-primary) 15%, transparent)',
                 borderRadius: '0.75rem',
                 display: 'flex',
                 alignItems: 'flex-start',
@@ -397,7 +397,7 @@ export default function CaseStepper({ currentStatus, judicialStage, compact = fa
                     width: '28px',
                     height: '28px',
                     borderRadius: '8px',
-                    background: 'rgba(139, 92, 246, 0.12)',
+                    background: 'color-mix(in srgb, var(--color-primary) 12%, transparent)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
