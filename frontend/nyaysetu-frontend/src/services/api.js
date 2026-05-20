@@ -1,5 +1,6 @@
 import axios from 'axios';
-
+import toast from "react-hot-toast";
+import { getErrorMessage } from "../utils/errorHandler";
 // Use explicit backend URL - Vite proxy can be unreliable
 // In development: http://localhost:8080
 // In production: Replace with actual backend URL via environment variable
@@ -48,7 +49,33 @@ api.interceptors.request.use((config) => {
 
     return config;
 });
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        const message = getErrorMessage(error);
 
+        // Show user-friendly toast notification
+        toast.error(message);
+
+        // Handle expired/invalid sessions
+        if (error.response?.status === 401) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+
+            // Prevent redirect loop
+            if (window.location.pathname !== "/login") {
+                window.location.href = "/login";
+            }
+        }
+
+        // Log detailed errors in development only
+        if (import.meta.env.DEV) {
+            console.error("API Error:", error);
+        }
+
+        return Promise.reject(error);
+    }
+);
 // Auth API
 export const authAPI = {
     login: (credentials) => api.post('/api/auth/login', credentials),
