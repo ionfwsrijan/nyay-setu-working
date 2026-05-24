@@ -13,8 +13,7 @@ class NotificationService {
     }
 
     /**
-     * Connects to the WebSocket for real-time notifications
-     * Silently fails if WebSocket is not available
+     * Connects to the WebSocket for real-time notifications securely
      */
     connect(token) {
         // Skip if already connected, connecting, or permanently failed
@@ -24,54 +23,90 @@ class NotificationService {
         if (this.isConnecting || this.connectionFailed) {
             return;
         }
+        if (!token || token === 'null' || token === 'undefined') {
+            return;
+        }
 
-        // Detect production environment
         const isProduction = !window.location.hostname.includes('localhost');
 
         try {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const host = new URL(this.API_BASE_URL).host;
-            const wsUrl = `${protocol}//${host}/api/ws/notifications?token=${token}`;
+
+            // REMOVED: ?token=${token} is gone from the URL string
+            const wsUrl = `${protocol}//${host}/api/ws/notifications`;
 
             this.isConnecting = true;
 
-            // Only log in development
             if (!isProduction) {
-                console.log('Connecting to WebSocket:', wsUrl);
+                console.log('Connecting to notification WebSocket...');
             }
 
             this.ws = new WebSocket(wsUrl);
 
+            // Handshake established - immediately pass token down the channel
             this.ws.onopen = () => {
-                if (!isProduction) {
-                    console.log('✅ WebSocket connected');
-                }
-                this.reconnectAttempts = 0;
-                this.isConnecting = false;
+                this.ws.send(JSON.stringify({
+                    type: 'AUTH',
+                    token: token
+                }));
             };
 
             this.ws.onmessage = (event) => {
                 try {
-                    const notification = JSON.parse(event.data);
-                    this.notifyListeners(notification);
+                    const message = JSON.parse(event.data);
+
+                    if (message.type === 'AUTH_SUCCESS') {
+                        if (!isProduction) {
+                            console.log('✅ Notification WebSocket authenticated');
+                        }
+                        this.reconnectAttempts = 0;
+                        this.isConnecting = false;
+                        this.connectionFailed = false;
+                        return;
+                    }
+
+                    if (message.type === 'AUTH_ERROR') {
+                        this.isConnecting = false;
+                        this.connectionFailed = true;
+                        this.disconnect();
+                        return;
+                    }
+
+                    if (message.type === 'NOTIFICATION') {
+                        // Extract payload specifically mapped by your backend listener
+                        this.notifyListeners(message.payload);
+                        return;
+                    }
+
+                    // Fallback wrapper
+                    this.notifyListeners(message);
                 } catch (error) {
-                    // Silent fail on parse errors
+                    if (!isProduction) {
+                        console.warn('Invalid notification WebSocket message format received');
+                    }
                 }
             };
 
             this.ws.onerror = () => {
-                // Suppress error logs
                 this.isConnecting = false;
             };
 
-            this.ws.onclose = () => {
+            this.ws.onclose = (event) => {
                 this.isConnecting = false;
+                this.ws = null;
+
+                // Code 1008 means the backend closed due to authentication failure
+                if (event.code === 1008) {
+                    this.connectionFailed = true;
+                    return;
+                }
+
                 if (!this.connectionFailed) {
                     this.attemptReconnect(token);
                 }
             };
         } catch (error) {
-            // Silent fail
             this.isConnecting = false;
             this.connectionFailed = true;
         }
@@ -89,7 +124,6 @@ class NotificationService {
                 this.connect(token);
             }, delay);
         } else {
-            // Stop trying after max attempts
             this.connectionFailed = true;
         }
     }
@@ -106,7 +140,7 @@ class NotificationService {
             try {
                 callback(notification);
             } catch (error) {
-                // Silent fail
+                // Silent fail to avoid crashing the service if a component breaks
             }
         });
     }
