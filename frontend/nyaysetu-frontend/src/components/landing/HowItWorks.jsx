@@ -1,3 +1,5 @@
+// fixed window.innerWidth checks (unreliable at render time) — replaced with CSS media queries
+// also fixed a broken JSX structure that was causing blank space below the steps grid
 import { motion } from 'framer-motion';
 import { UserPlus, FileSearch, Gavel, CheckCircle, ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -38,8 +40,8 @@ export default function HowItWorks() {
 
     return (
         <section style={{
-            padding: '1rem 2rem 6rem',
-            background: 'transparent' // Let body background show through
+            padding: '5rem 2rem 6rem',
+            background: 'var(--bg-main)',
         }}>
             <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
                 {/* Header */}
@@ -104,7 +106,7 @@ export default function HowItWorks() {
                 {/* Steps */}
                 <div style={{ position: 'relative' }}>
                     {/* Connection Line */}
-                    <div style={{
+                    <div className="hiw-connector" style={{
                         position: 'absolute',
                         top: '80px',
                         left: '50%',
@@ -112,15 +114,14 @@ export default function HowItWorks() {
                         width: '80%',
                         height: '2px',
                         background: 'linear-gradient(90deg, #8b5cf6 0%, #6366f1 33%, #ec4899 66%, #10b981 100%)',
-                        opacity: 0.3,
+                        opacity: 0.25,
                         zIndex: 0,
-                        display: window.innerWidth > 768 ? 'block' : 'none'
                     }} />
 
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                        gap: '3rem',
+                        gap: '4rem',
                         position: 'relative',
                         zIndex: 1
                     }}>
@@ -133,7 +134,14 @@ export default function HowItWorks() {
                                 transition={{ delay: idx * 0.15 }}
                                 style={{
                                     textAlign: 'center',
-                                    position: 'relative'
+                                    position: 'relative',
+                                    padding: '1.5rem',
+                                    borderRadius: '1.5rem',
+                                    transition: 'all 0.3s ease',
+                                    cursor: 'pointer',
+                                    background: 'rgba(255,255,255,0.02)',
+                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    backdropFilter: 'blur(10px)'
                                 }}
                             >
                                 {/* Step Number Background */}
@@ -154,7 +162,7 @@ export default function HowItWorks() {
 
                                 {/* Icon Container */}
                                 <motion.div
-                                    whileHover={{ scale: 1.1, rotate: 5 }}
+                                    whileHover={{ scale: 1.12, rotate: 4, y: -8 }}
                                     transition={{ type: "spring", stiffness: 300 }}
                                     style={{
                                         width: '120px',
@@ -193,8 +201,9 @@ export default function HowItWorks() {
 
                                 {/* Title */}
                                 <h3 style={{
-                                    fontSize: '1.5rem',
-                                    fontWeight: '800',
+                                    fontSize: '1.7rem',
+                                    fontWeight: '900',
+                                    lineHeight: '1.3',
                                     color: 'var(--text-main)',
                                     marginBottom: '1rem'
                                 }}>
@@ -206,7 +215,7 @@ export default function HowItWorks() {
                                     color: 'var(--text-secondary)',
                                     fontSize: '1rem',
                                     lineHeight: '1.6',
-                                    maxWidth: '300px',
+                                    maxWidth: '320px',
                                     margin: '0 auto'
                                 }}>
                                     {step.description}
@@ -214,13 +223,12 @@ export default function HowItWorks() {
 
                                 {/* Arrow for desktop */}
                                 {idx < steps.length - 1 && (
-                                    <div style={{
+                                    <div className="hiw-arrow" style={{
                                         position: 'absolute',
                                         top: '60px',
                                         right: '-50px',
                                         color: step.color,
                                         opacity: 0.5,
-                                        display: window.innerWidth > 768 ? 'block' : 'none'
                                     }}>
                                         <ArrowRight size={32} />
                                     </div>
@@ -269,6 +277,11 @@ export default function HowItWorks() {
                     </motion.button>
                 </motion.div>
             </div>
+            <style>{`
+                @media (max-width: 768px) {
+                    .hiw-connector, .hiw-arrow { display: none !important; }
+                }
+            `}</style>
         </section>
     );
 }

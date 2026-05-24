@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { MessageCircle, X, Send } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { MessageCircle, X, Send, Mic, StopCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { brainAPI } from '../../services/api';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import ScrollTopButton from './ScrollTopButton';
 
 export default function AIChatbot() {
     const [isOpen, setIsOpen] = useState(false);
@@ -13,6 +14,8 @@ export default function AIChatbot() {
     const [input, setInput] = useState('');
     const [isTyping, setIsTyping] = useState(false);
     const [sessionId, setSessionId] = useState(null);
+    const [isRecording, setIsRecording] = useState(false);
+    const recognitionRef = useRef(null);
 
     const handleSend = async () => {
         if (!input.trim()) return;
@@ -42,9 +45,53 @@ export default function AIChatbot() {
         }
     };
 
+    const startRecording = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert('Speech recognition is not supported in this browser.');
+        return;
+    }
+
+    const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = 'en-IN';
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+        setIsRecording(true);
+    };
+
+    recognition.onend = () => {
+        setIsRecording(false);
+    };
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInput((prev) => prev + ' ' + transcript);
+    };
+
+    recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        setIsRecording(false);
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+};
+
+const stopRecording = () => {
+    if (recognitionRef.current) {
+        recognitionRef.current.stop();
+    }
+};
+
     return (
         <>
             {/* Floating Button */}
+            <ScrollTopButton />
+
             <motion.button
                 onClick={() => setIsOpen(!isOpen)}
                 whileHover={{ scale: 1.05 }}
@@ -157,7 +204,7 @@ export default function AIChatbot() {
                                         background: msg.role === 'user'
                                             ? 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)'
                                             : 'white', // Light background for bot
-                                        color: msg.role === 'user' ? 'white' : 'var(--text-main)',
+                                        color: msg.role === 'user' ? 'white' : '#4B5563',
                                         fontSize: '0.9rem',
                                         lineHeight: '1.5',
                                         boxShadow: msg.role === 'assistant' ? '0 2px 10px rgba(0,0,0,0.05)' : 'none',
@@ -194,7 +241,7 @@ export default function AIChatbot() {
                         <div style={{
                             padding: '1.25rem',
                             borderTop: 'var(--border-glass)',
-                            background: 'rgba(255, 255, 255, 0.5)'
+                            background: 'var(--bg-glass-strong)'
                         }}>
                             <div style={{ display: 'flex', gap: '0.75rem' }}>
                                 <input
@@ -209,11 +256,31 @@ export default function AIChatbot() {
                                         background: 'white',
                                         border: '1px solid rgba(0, 0, 0, 0.1)',
                                         borderRadius: '0.75rem',
-                                        color: 'var(--text-main)',
+                                        color: '#4B5563',
                                         fontSize: '0.95rem',
                                         outline: 'none'
                                     }}
                                 />
+                                
+                                <button
+    onClick={isRecording ? stopRecording : startRecording}
+    style={{
+        padding: '0.75rem',
+        background: isRecording
+            ? '#ef4444'
+            : 'rgba(139, 92, 246, 0.15)',
+        border: 'none',
+        borderRadius: '0.75rem',
+        color: isRecording ? 'white' : '#8b5cf6',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+    }}
+>
+    {isRecording ? <StopCircle size={18} /> : <Mic size={18} />}
+</button>
+
                                 <button
                                     onClick={handleSend}
                                     disabled={!input.trim()}
