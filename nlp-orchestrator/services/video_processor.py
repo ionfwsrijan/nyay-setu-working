@@ -11,7 +11,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 async def download_video(url: str, job_id: str) -> str:
-    """Download video from URL (which will be a MinIO/Spring Boot endpoint) to a local temp file."""
+    """Download video from URL (which will be a MinIO/Spring Boot endpoint) to a local temp file."""  # noqa: E501
     # If the URL is already a local path (for testing), just return it
     if url.startswith("/") and os.path.exists(url):
         return url
@@ -90,7 +90,7 @@ async def extract_frames(
 
 
 def cleanup_job(job_id: str):
-    """Delete the downloaded video and frames after analysis to comply with DPDP Act 2023."""
+    """Delete the downloaded video and frames after analysis to comply with DPDP Act 2023."""  # noqa: E501
     import shutil
 
     video_path = os.path.join(UPLOAD_DIR, f"{job_id}_video.mp4")

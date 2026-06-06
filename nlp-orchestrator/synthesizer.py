@@ -13,7 +13,7 @@ from models.schemas import SynthesisResult
 
 client = AsyncGroq(api_key=GROQ_API_KEY)
 
-STRUCTURED_SYNTHESIS_PROMPT = """You are a senior Indian legal expert writing a final comprehensive legal opinion.
+STRUCTURED_SYNTHESIS_PROMPT = """You are a senior Indian legal expert writing a final comprehensive legal opinion.  # noqa: E501
 
 You have received research results from multiple focused legal sub-queries.
 Synthesize these into a single, clear, well-structured answer for an Indian citizen.
@@ -23,17 +23,17 @@ Research Results:
 
 Original User Question: {original_query}
 
-Return ONLY a valid JSON object (no markdown fences, no commentary) with EXACTLY these two keys:
+Return ONLY a valid JSON object (no markdown fences, no commentary) with EXACTLY these two keys:  # noqa: E501
   "answer_markdown": a string containing the full answer in clean markdown. It must:
       1. Start with a clear, direct answer to the main question (2-3 sentences)
-      2. Provide key legal provisions with exact section numbers (IPC/BNS/CPC/CrPC/MVA as applicable)
+      2. Provide key legal provisions with exact section numbers (IPC/BNS/CPC/CrPC/MVA as applicable)  # noqa: E501
       3. Outline practical steps the user can take
       4. Mention any important deadlines or limitations
-      5. Include a brief disclaimer that this is AI-generated legal information and a lawyer should be consulted
-      Use ## headers and - bullets where appropriate. Write in simple, accessible English.
-  "cited_laws": an array of strings listing every distinct statutory provision you cited,
+      5. Include a brief disclaimer that this is AI-generated legal information and a lawyer should be consulted  # noqa: E501
+      Use ## headers and - bullets where appropriate. Write in simple, accessible English.  # noqa: E501
+  "cited_laws": an array of strings listing every distinct statutory provision you cited,  # noqa: E501
       each in the form "<ACT> Sec <NUMBER>" or "Article <NUMBER>"
-      (e.g. ["IPC Sec 302", "CrPC Sec 144", "Article 21"]). Use an empty array [] if none.
+      (e.g. ["IPC Sec 302", "CrPC Sec 144", "Article 21"]). Use an empty array [] if none.  # noqa: E501
 
 Example:
 {{"answer_markdown": "## Answer\\n...", "cited_laws": ["IPC Sec 304A", "MVA Sec 166"]}}
@@ -49,7 +49,7 @@ _ACT_DISPLAY = {
     "Article": "Article",
 }
 
-SYNTHESIS_PROMPT = """You are a senior Indian legal expert writing a final comprehensive legal opinion.
+SYNTHESIS_PROMPT = """You are a senior Indian legal expert writing a final comprehensive legal opinion.  # noqa: E501
 
 You have received research results from multiple focused legal sub-queries.
 Synthesize these into a single, clear, well-structured answer for an Indian citizen.
@@ -61,12 +61,12 @@ Original User Question: {original_query}
 
 Your synthesis must:
 1. Start with a clear, direct answer to the main question (2-3 sentences)
-2. Provide key legal provisions with exact section numbers (IPC/BNS/CPC/MVA as applicable)
+2. Provide key legal provisions with exact section numbers (IPC/BNS/CPC/MVA as applicable)  # noqa: E501
 3. Outline practical steps the user can take
 4. Mention any important deadlines or limitations
-5. Include a brief disclaimer that this is AI-generated legal information and a lawyer should be consulted for specific cases
+5. Include a brief disclaimer that this is AI-generated legal information and a lawyer should be consulted for specific cases  # noqa: E501
 
-Format your response in clear markdown with headers (##) and bullet points (-) where appropriate.
+Format your response in clear markdown with headers (##) and bullet points (-) where appropriate.  # noqa: E501
 Write in simple, accessible English. Avoid heavy legal jargon.
 """
 

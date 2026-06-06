@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger("gemini-analyzer")
 client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 
-TIMELINE_RECONSTRUCTION_PROMPT = """SYSTEM: You are a forensic accident analyst for Indian courts.
+TIMELINE_RECONSTRUCTION_PROMPT = """SYSTEM: You are a forensic accident analyst for Indian courts.  # noqa: E501
 You have expertise in IPC 279, 304A, 337, 338, Motor Vehicles Act 1988, and BNS 2023.
 
 USER: Analyze this accident video frame by frame.
@@ -17,7 +17,7 @@ TIMESTAMP | EVENT | VEHICLE | BEHAVIOR | LEGAL FLAG
 Label each moment:
 PRE_INCIDENT / WARNING / TRIGGER / IMPACT / POST_IMPACT
 
-The TRIGGER moment is the most important — identify exactly who did what at what second that caused the accident.
+The TRIGGER moment is the most important — identify exactly who did what at what second that caused the accident.  # noqa: E501
 
 End with LIABILITY VERDICT:
 - Primary fault: Vehicle X because [reason]

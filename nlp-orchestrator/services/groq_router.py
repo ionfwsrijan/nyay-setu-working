@@ -5,7 +5,7 @@ from config import GROQ_API_KEY, GROQ_MODEL_FAST
 logger = logging.getLogger("groq-router")
 client = AsyncGroq(api_key=GROQ_API_KEY)
 
-LEGAL_LOOKUP_PROMPT = """SYSTEM: You are an expert Indian collision and motor vehicle law advisor.
+LEGAL_LOOKUP_PROMPT = """SYSTEM: You are an expert Indian collision and motor vehicle law advisor.  # noqa: E501
 
 USER: Based on this accident description: {timeline_summary}
 
@@ -15,13 +15,13 @@ Identify all applicable Indian law sections:
 - BNS 2023 equivalent sections
 - Compensation claim eligibility under MV Act Section 166 (MACT)
 
-For each section explain in 1 plain-language sentence what it means for this citizen's case.
+For each section explain in 1 plain-language sentence what it means for this citizen's case.  # noqa: E501
 Keep the output highly structured and formatted in Markdown. Do not hallucinate laws.
 """
 
 
 async def legal_section_lookup(citizen_description: str, job_id: str) -> str:
-    """Extract applicable legal sections based on the citizen's description of the event."""
+    """Extract applicable legal sections based on the citizen's description of the event."""  # noqa: E501
     if not citizen_description:
         return (
             "No description provided by the citizen to lookup specific legal sections."

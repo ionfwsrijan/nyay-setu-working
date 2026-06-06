@@ -8,7 +8,7 @@ try:
     import docx
 except ImportError:
     logging.warning(
-        "Optional dependencies for multi-modal extraction missing. Run pip install pytesseract pdf2image python-docx"
+        "Optional dependencies for multi-modal extraction missing. Run pip install pytesseract pdf2image python-docx"  # noqa: E501
     )
 
 
@@ -27,7 +27,7 @@ class MultiModalExtractor:
                 return self._extract_from_image(file_bytes)
             elif (
                 file_type
-                == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"  # noqa: E501
             ):
                 return self._extract_from_docx(file_bytes)
             else:

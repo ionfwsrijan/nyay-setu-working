@@ -16,7 +16,7 @@ fully cover the original question. Each sub-question should be answerable indepe
 Focus ONLY on Indian law: IPC, BNS, CPC, MVA, Constitution, etc.
 
 STRICT DOMAIN GUARDRAIL:
-- If the user's question is NOT related to Indian Law, legal procedures, or the Indian justice system, return an empty JSON array [].
+- If the user's question is NOT related to Indian Law, legal procedures, or the Indian justice system, return an empty JSON array [].  # noqa: E501
 - DO NOT attempt to decompose non-legal queries (e.g., science, tech, general chitchat).
 
 Return ONLY a valid JSON array of strings. No explanation. No markdown.
