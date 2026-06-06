@@ -33,7 +33,7 @@ async def analyze_frames(frame_paths: list[str], job_id: str) -> str:
         return "FALLBACK: Gemini API key not configured. Video frame analysis skipped."
 
     try:
-        # Note: For production with many frames, it's better to use Gemini File API to upload a video
+        # Note: For production with many frames, it's better to use Gemini File API to upload a video  # noqa: E501
         # But for this implementation we will upload the extracted frames directly
 
         # Load the images
