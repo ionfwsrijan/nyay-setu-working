@@ -137,6 +137,9 @@ public class CaseEntity {
     @Column(columnDefinition = "TEXT")
     private String blockingErrors;
 
+    @Version
+    private Long version;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
