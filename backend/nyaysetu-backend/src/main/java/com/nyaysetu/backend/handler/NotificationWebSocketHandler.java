@@ -36,7 +36,7 @@ public class NotificationWebSocketHandler extends TextWebSocketHandler {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final Map<Long, WebSocketSession> sessionsByUserId = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Long, CopyOnWriteArraySet<WebSocketSession>> sessionsByUserId = new ConcurrentHashMap<>();
     private final Map<String, Long> userIdBySessionId = new ConcurrentHashMap<>();
     private final Map<String, ScheduledFuture<?>> authTimeouts = new ConcurrentHashMap<>();
 
@@ -113,17 +113,20 @@ public class NotificationWebSocketHandler extends TextWebSocketHandler {
 
             cancelAuthTimeout(session);
 
-            sessionsByUserId.put(user.getId(), session);
+            sessionsByUserId.computeIfAbsent(user.getId(), id -> new CopyOnWriteArraySet<>()).add(session);
             userIdBySessionId.put(session.getId(), user.getId());
 
             sendJson(session, Map.of("type", "AUTH_SUCCESS"));
 
-            sendNotification(user.getId(), Map.of(
-                    "id", System.currentTimeMillis(),
-                    "title", "Connected",
-                    "message", "Real-time notifications enabled",
-                    "timestamp", new Date().toString(),
-                    "read", false
+            sendJson(session, Map.of(
+                    "type", "NOTIFICATION",
+                    "payload", Map.of(
+                            "id", System.currentTimeMillis(),
+                            "title", "Connected",
+                            "message", "Real-time notifications enabled",
+                            "timestamp", new Date().toString(),
+                            "read", false
+                    )
             ));
 
             log.info("Notification WebSocket authenticated for user: {}", user.getId());
@@ -140,7 +143,10 @@ public class NotificationWebSocketHandler extends TextWebSocketHandler {
 
         Long userId = userIdBySessionId.remove(session.getId());
         if (userId != null) {
-            sessionsByUserId.remove(userId, session);
+            sessionsByUserId.computeIfPresent(userId, (id, sessions) -> {
+                sessions.remove(session);
+                return sessions.isEmpty() ? null : sessions;
+            });
             log.info("Notification WebSocket closed for user: {}", userId);
         } else {
             log.info("Unauthenticated notification WebSocket closed: {}", session.getId());
@@ -157,32 +163,38 @@ public class NotificationWebSocketHandler extends TextWebSocketHandler {
     }
 
     public void sendNotification(Long userId, Map<String, Object> notification) {
-        WebSocketSession session = sessionsByUserId.get(userId);
-
-        if (session == null || !session.isOpen()) {
+        CopyOnWriteArraySet<WebSocketSession> sessions = sessionsByUserId.get(userId);
+        if (sessions == null || sessions.isEmpty()) {
             return;
         }
 
-        try {
-            sendJson(session, Map.of(
-                    "type", "NOTIFICATION",
-                    "payload", notification
-            ));
-        } catch (IOException e) {
-            log.error("Failed to send notification to user {}: {}", userId, e.getMessage());
+        for (WebSocketSession session : sessions) {
+            if (session == null || !session.isOpen()) {
+                continue;
+            }
+            try {
+                sendJson(session, Map.of(
+                        "type", "NOTIFICATION",
+                        "payload", notification
+                ));
+            } catch (IOException e) {
+                log.error("Failed to send notification to user {}: {}", userId, e.getMessage());
+            }
         }
     }
 
     public void broadcastNotification(Map<String, Object> notification) {
-        sessionsByUserId.forEach((userId, session) -> {
-            if (session.isOpen()) {
-                try {
-                    sendJson(session, Map.of(
-                            "type", "NOTIFICATION",
-                            "payload", notification
-                    ));
-                } catch (IOException e) {
-                    log.error("Failed to broadcast notification to user {}: {}", userId, e.getMessage());
+        sessionsByUserId.forEach((userId, sessions) -> {
+            for (WebSocketSession session : sessions) {
+                if (session.isOpen()) {
+                    try {
+                        sendJson(session, Map.of(
+                                "type", "NOTIFICATION",
+                                "payload", notification
+                        ));
+                    } catch (IOException e) {
+                        log.error("Failed to broadcast notification to user {}: {}", userId, e.getMessage());
+                    }
                 }
             }
         });
