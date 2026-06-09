@@ -58,7 +58,10 @@ def set_cached_response(cache_key: str, response: str, ttl: int = CACHE_TTL) -> 
 def clear_expired_cache() -> int:
 
     count = 0
-    expired_keys = [k for k in list(cache_store) if k not in cache_store]
+    current_time = time.time()
+    expired_keys = [
+        k for k, v in list(cache_store.items()) if current_time > v["expires_at"]
+    ]
     for k in expired_keys:
         try:
             del cache_store[k]
