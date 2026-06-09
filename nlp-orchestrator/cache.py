@@ -15,6 +15,7 @@ MAX_CACHE_SIZE = 10000
 
 try:
     from cachetools import TTLCache
+
     cache_store: TTLCache = TTLCache(maxsize=MAX_CACHE_SIZE, ttl=CACHE_TTL)
 except ImportError:
     cache_store = {}
