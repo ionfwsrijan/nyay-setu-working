@@ -1,8 +1,8 @@
 package com.nyaysetu.backend.repository;
 
-import com.nyaysetu.backend.entity.CaseEntity;
-import com.nyaysetu.backend.entity.CaseStatus;
-import com.nyaysetu.backend.entity.User;
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -11,6 +11,9 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import com.nyaysetu.backend.entity.CaseEntity;
+import com.nyaysetu.backend.entity.CaseStatus;
+import com.nyaysetu.backend.entity.User;
 
 @Repository
 public interface CaseRepository extends JpaRepository<CaseEntity, UUID> {
@@ -46,4 +49,9 @@ public interface CaseRepository extends JpaRepository<CaseEntity, UUID> {
     
     // Find cases by respondent email
     List<CaseEntity> findByRespondentEmail(String respondentEmail);
+
+    // Reverted invalid JOIN FETCH. If N+1 optimization is needed for documents, 
+    // it must be handled via DTO projections or by adding a @OneToMany mapping in CaseEntity.
+    @Query("SELECT c FROM CaseEntity c")
+    List<CaseEntity> findAllWithDocuments();
 }
