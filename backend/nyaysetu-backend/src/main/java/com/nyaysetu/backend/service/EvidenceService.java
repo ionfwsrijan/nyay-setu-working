@@ -79,7 +79,7 @@ File savedFile = new File(folder, filename);
         }
 
         CaseEvidence evidence = CaseEvidence.builder()
-                .legalCaseId(caseId)
+                .caseEntity(caseEntity)
                 .fileName(filename)
                 .fileUrl("/files/evidence/" + filename)
                 .uploadedBy(uploaderId)
@@ -93,6 +93,6 @@ File savedFile = new File(folder, filename);
     }
 
     public List<CaseEvidence> getEvidence(UUID caseId) {
-        return evidenceRepository.findByLegalCaseId(caseId);
+        return evidenceRepository.findByCaseEntity_Id(caseId);
     }
 }

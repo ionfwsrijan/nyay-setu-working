@@ -404,6 +404,10 @@ public class VakilFriendDocumentService {
      */
     @Transactional
     public CaseEvidence storeInEvidenceVault(
+        CaseEntity caseEntity = caseRepository.findById(caseId)
+        .orElseThrow(() ->
+                new RuntimeException("Case not found: " + caseId)
+        );
             UUID caseId,
             MultipartFile file,
             String savedFilePath,
@@ -412,7 +416,7 @@ public class VakilFriendDocumentService {
             Long uploaderId
     ) {
         CaseEvidence evidence = CaseEvidence.builder()
-                .legalCaseId(caseId)
+                .caseEntity(caseEntity)
                 .fileName(file.getOriginalFilename())
                 .fileUrl("/api/documents/download?path=" + savedFilePath)
                 .uploadedBy(uploaderId)
@@ -590,6 +594,10 @@ public class VakilFriendDocumentService {
      */
     @Transactional
     public void transferDocumentsToCase(UUID sessionId, UUID caseId) {
+        CaseEntity caseEntity = caseRepository.findById(caseId)
+        .orElseThrow(() ->
+                new RuntimeException("Case not found: " + caseId)
+        );
         log.info("Transferring documents for session {} to case {}", sessionId, caseId);
         
         var docs = documentRepository.findByCategoryAndDescriptionContaining(
@@ -607,7 +615,7 @@ public class VakilFriendDocumentService {
             // Also mirror to CaseEvidence table (Vault)
             try {
                 CaseEvidence evidence = CaseEvidence.builder()
-                        .legalCaseId(caseId)
+                        .caseEntity(caseEntity)
                         .fileName(doc.getFileName())
                         .fileUrl(doc.getFileUrl())
                         .uploadedBy(doc.getUploadedBy())
