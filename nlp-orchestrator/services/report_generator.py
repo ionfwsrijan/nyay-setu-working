@@ -1,3 +1,5 @@
+
+
 def generate_report(job_id: str, gemini_timeline: str, groq_legal: str) -> dict:
     """
     Takes the unstructured Markdown text from Gemini and Groq

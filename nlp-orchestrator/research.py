@@ -137,47 +137,47 @@ def build_provider_queue(primary_provider: str) -> list[str]:
 async def _attempt_provider(
     provider: str, question: str, kanoon_context: str | None = None
 ) -> dict:
-    """Invoke a single provider once, honoring circuit-breaker state and returning a structured result or fallback."""  # noqa: E501
+    """Invoke a single provider once, honoring circuit-breaker state and returning a structured result or fallback."""
     if provider == "gemini":
         if not gemini_client:
             return _fallback_response(question, "gemini")
-        if not gemini_breaker.is_available():
+        if not await gemini_breaker.is_available():
             logger.warning("[CircuitBreaker/Gemini] OPEN - skipping")
             return _fallback_response(question, "gemini")
         try:
             # Use single-attempt call here; coordinator owns retries
             res = await _call_gemini_once(question, kanoon_context)
-            gemini_breaker.call_succeeded()
+            await gemini_breaker.call_succeeded()
             return res
         except Exception as exc:
-            gemini_breaker.call_failed()
+            await gemini_breaker.call_failed()
             logger.error(f"[Research/Gemini] Provider attempt failed: {exc}")
             raise
 
     if provider == "groq":
-        if not groq_breaker.is_available():
+        if not await groq_breaker.is_available():
             logger.warning("[CircuitBreaker/Groq] OPEN - skipping")
             return _fallback_response(question, "groq")
         try:
             # Use single-attempt call here; coordinator owns retries
             res = await _call_groq_once(question, kanoon_context)
-            groq_breaker.call_succeeded()
+            await groq_breaker.call_succeeded()
             return res
         except Exception as exc:
-            groq_breaker.call_failed()
+            await groq_breaker.call_failed()
             logger.error(f"[Research/Groq] Provider attempt failed: {exc}")
             raise
 
     if provider == "ollama":
-        if not ollama_breaker.is_available():
+        if not await ollama_breaker.is_available():
             logger.warning("[CircuitBreaker/Ollama] OPEN - skipping")
             return _fallback_response(question, "ollama")
         try:
             res = await _call_ollama_once(question, kanoon_context)
-            ollama_breaker.call_succeeded()
+            await ollama_breaker.call_succeeded()
             return res
         except Exception as exc:
-            ollama_breaker.call_failed()
+            await ollama_breaker.call_failed()
             logger.error(f"[Research/Ollama] Provider attempt failed: {exc}")
             raise
 
@@ -187,7 +187,7 @@ async def _attempt_provider(
 async def execute_with_fallback(
     question: str, kanoon_context: str | None = None, primary_provider: str = "gemini"
 ) -> dict:
-    """Coordinator: try primary provider with retries, then fallback to secondary providers.  # noqa: E501
+    """Coordinator: try primary provider with retries, then fallback to secondary providers.
 
     Returns the first successful provider result or a unified fallback response when all fail.  # noqa: E501
     """
@@ -224,12 +224,12 @@ async def execute_with_fallback(
                 # backoff increases with each retry (attempt starts at 0)
                 wait = RETRY_DELAY_SECONDS * (attempt + 1)
                 logger.warning(
-                    f"[Research] Transient error from {provider}, retry {attempt+1} in {wait}s: {exc}"  # noqa: E501
+                    f"[Research] Transient error from {provider}, retry {attempt+1} in {wait}s: {exc}"
                 )
                 await asyncio.sleep(wait)
 
         logger.warning(
-            f"[Research] Provider {provider} exhausted, trying next provider if available"  # noqa: E501
+            f"[Research] Provider {provider} exhausted, trying next provider if available"
         )
 
     logger.error(f"[Research] All providers exhausted. Last error: {last_error}")
@@ -362,16 +362,16 @@ async def call_groq_async(
 ) -> dict:
     """Call Groq with circuit breaker + retry + ground-flag enforcement."""
     kanoon_context = _enforce_ground_flag(kanoon_context)
-    if not groq_breaker.is_available():
+    if not await groq_breaker.is_available():
         logger.warning("[CircuitBreaker/Groq] OPEN — fast-failing")
         return _fallback_response(question, "groq")
 
     try:
         result = await _call_groq_with_retry(question, kanoon_context)
-        groq_breaker.call_succeeded()
+        await groq_breaker.call_succeeded()
         return result
     except Exception as e:
-        groq_breaker.call_failed()
+        await groq_breaker.call_failed()
         logger.error(f"[Research/Groq] failed after retries: {type(e).__name__}: {e}")
         return _fallback_response(question, "groq")
 
@@ -385,16 +385,16 @@ async def call_gemini_async(
 
     if not gemini_client:
         return await call_groq_async(question, kanoon_context)
-    if not gemini_breaker.is_available():
+    if not await gemini_breaker.is_available():
         logger.warning("[CircuitBreaker/Gemini] OPEN — falling back to Groq")
         return await call_groq_async(question, kanoon_context)
 
     try:
         result = await _call_gemini_with_retry(question, kanoon_context)
-        gemini_breaker.call_succeeded()
+        await gemini_breaker.call_succeeded()
         return result
     except Exception as e:
-        gemini_breaker.call_failed()
+        await gemini_breaker.call_failed()
         logger.error(f"[Research/Gemini] failed after retries: {type(e).__name__}: {e}")
         return await call_groq_async(question, kanoon_context)
 

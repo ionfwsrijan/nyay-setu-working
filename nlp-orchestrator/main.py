@@ -17,7 +17,7 @@ import json
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI, Request
+from fastapi import FastAPI, Request
 import time
 import uuid
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -152,6 +152,21 @@ try:
     logger.info("Loaded modi_ocr router.")
 except ImportError:
     logger.warning("Skipping modi_ocr router due to missing dependencies.")
+try:
+    from routers.ocr import router as ocr_router
+    app.include_router(ocr_router)
+    logger.info("Loaded ocr router.")
+except ImportError:
+    logger.warning("Skipping ocr router due to missing dependencies.")
+
+try:
+    from routers.contradictions import router as contradictions_router
+
+    app.include_router(contradictions_router)
+    logger.info("Loaded contradictions router.")
+except Exception as e:
+    logger.warning("Skipping contradictions router: %s", e)
+
 
 
 # ─── Models ───────────────────────────────────────────────────────────────────
@@ -550,7 +565,6 @@ async def deep_research_pipeline(query: str, language: str):
 
         # Compute complexity score for display
         from router import COMPLEX_KEYWORDS
-
         lower_q = query.lower()
         complex_score = sum(1 for kw in COMPLEX_KEYWORDS if kw in lower_q)
         word_count = len(query.split())
