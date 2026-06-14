@@ -1,5 +1,7 @@
 const { Server } = require('socket.io');
 
+const DEFAULT_BACKEND_URL = 'http://localhost:8080';
+
 // Create Socket.IO server on port 3001
 const io = new Server(3001, {
     cors: {
@@ -26,7 +28,7 @@ io.on('connection', (socket) => {
 
         // Validate room access via backend API
         try {
-            const response = await fetch(`${process.env.BACKEND_URL || 'http://localhost:8080'}/meetings/validate-room-access`, {
+            const response = await fetch(`${process.env.BACKEND_URL || DEFAULT_BACKEND_URL}/meetings/validate-room-access`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -39,7 +41,6 @@ io.on('connection', (socket) => {
                 return;
             }
         } catch (err) {
-            console.error(`Room auth check failed for room ${roomId}:`, err.message);
             socket.emit('error', 'Authorization check failed');
             return;
         }
